@@ -469,13 +469,15 @@ def test_compute_hmm_returns_one_state_per_observation():
     states = compute_hmm(
         velocities=velocities,
         verbose=False,
-        initialization="default",
         reestimation_max_iters=10,
         mu=None,
         sigma=None,
         init_state=None,
         transition_probabilities=None,
         velocities_mask=mask,
+        reestimation = True,
+        hmm_parameters_dict = None
+
     )
 
     assert states.shape == (4,)
@@ -489,13 +491,14 @@ def test_compute_hmm_returns_binary_states_only():
     states = compute_hmm(
         velocities=velocities,
         verbose=False,
-        initialization="default",
         reestimation_max_iters=10,
         mu=None,
         sigma=None,
         init_state=None,
         transition_probabilities=None,
         velocities_mask=mask,
+        reestimation = False,
+        hmm_parameters_dict = None
     )
 
     assert set(np.unique(states)).issubset({0, 1})
@@ -522,7 +525,6 @@ def test_ihmm_detects_fixation_event_on_synthetic_data():
 
     events = ihmm(
         velocities=velocities,
-        initialization="default",
     )
 
     assert len(events.frame) >= 1
@@ -604,24 +606,6 @@ def test_ihmm_rejects_invalid_transition_shape():
             transition_probabilities=[[0.5, 0.5]],
         )
 
-
-
-def test_ihmm_rejects_invalid_initialization_string():
-    velocities = np.array(
-        [
-            [0.0, 0.0],
-            [1.0, 1.0],
-        ]
-    )
-
-    with pytest.raises(ValueError, match="initialization"):
-        ihmm(
-            velocities=velocities,
-            initialization="unsupported_mode",
-        )
-
-
-
 def test_ihmm_handles_nan_velocities():
     velocities = np.array(
         [
@@ -633,7 +617,6 @@ def test_ihmm_handles_nan_velocities():
 
     events = ihmm(
         velocities=velocities,
-        initialization="default",
     )
 
     assert events is not None
@@ -706,3 +689,4 @@ def test_viterbi_regression_known_path():
     expected = np.array([0, 0, 1, 1, 0])
 
     np.testing.assert_array_equal(result, expected)
+
